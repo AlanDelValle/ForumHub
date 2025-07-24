@@ -1,25 +1,39 @@
 package com.ForumHub.controller;
 
-import com.ForumHub.model.Topico;
-import com.ForumHub.dto.TopicoRequestDTO;
-import com.ForumHub.dto.TopicoResponseDTO;
-import com.ForumHub.repository.TopicoRepository;
-import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.ForumHub.dto.TopicoRequestDTO;
+import com.ForumHub.dto.TopicoResponseDTO;
+import com.ForumHub.model.Topico;
+import com.ForumHub.repository.TopicoRepository;
+
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/topicos")
 public class TopicoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(TopicoController.class);
 
     @Autowired
     private TopicoRepository repository;
@@ -46,13 +60,13 @@ public class TopicoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TopicoResponseDTO> detalhar(@PathVariable Long id) {
-        Optional<Topico> topico = repository.findById(id);
+        Optional<Topico> topico = repository.findById(id);        
         if (topico.isPresent()) {
-            Topico t = topico.get();
+            Topico t = topico.get();            
             return ResponseEntity.ok(new TopicoResponseDTO(t.getId(), t.getTitulo(), t.getMensagem(), t.getDataCriacao(),
                     t.getStatus(), t.getAutor(), t.getCurso()));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.notFound().build();    
     }
 
     @PutMapping("/{id}")

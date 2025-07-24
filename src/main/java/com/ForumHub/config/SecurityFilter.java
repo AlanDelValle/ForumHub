@@ -44,6 +44,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         String token = getToken(request);
         if (token != null && !token.isBlank()) {
             try {
+                logger.info("Validando token JWT: {}", token);
                 String username = tokenService.getSubject(token);
                 if (username != null) {
                     Usuario usuario = usuarioRepository.findByLogin(username)
@@ -53,29 +54,25 @@ public class SecurityFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     logger.info("Usuário autenticado com sucesso: {}", username);
                 }
-            } catch (io.jsonwebtoken.MalformedJwtException e) {
-                logger.error("Token JWT inválido: {}", token, e);
+            } catch (IllegalArgumentException e) {
+                logger.error("Token JWT inválido: {}. Erro: {}", token, e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             } catch (Exception e) {
-                logger.error("Erro ao processar token JWT: {}", e.getMessage(), e);
+                logger.error("Erro ao processar token JWT: {}. Erro: {}", token, e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
         } else {
-            logger.warn("Não foi encontrado um token JWT válido para a requisição: {}", request.getRequestURI());
+            logger.warn("Não foi encontrado um token JWT válido para a requisição: {}. Header recebido: {}", request.getRequestURI(), request.getHeader("Authorization"));
         }
         chain.doFilter(request, response);
     }
 
     private String getToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        logger.info("Header de Authorization: {}", header);
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.replace("Bearer ", "").trim();
-            logger.info("Token extraído: {}", token);
-            return token;
-        }
-        return null;
+    String header = request.getHeader("Authorization");
+    logger.info("Header de Authorization bruto: " + header);        
+        return header;    
     }
+
 }

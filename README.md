@@ -53,7 +53,7 @@ O **FórumHub** é uma API RESTful desenvolvida para gerenciar tópicos de discu
    spring.jpa.hibernate.ddl-auto=none
    spring.flyway.enabled=true
    spring.flyway.locations=classpath:db/migration
-   jwt.secret=chave-secreta-super-segura-1234567890abcdef
+   jwt.secret=MEJYNkFuV3pJRUZEVW1MY3VvTnpVQUNpaGg0dGhKT2V1YkZxeDZuMQ==
    jwt.expiration=3600000
    ```
    - Substitua `sua_senha` pela senha do seu usuário MySQL.
@@ -66,7 +66,7 @@ O **FórumHub** é uma API RESTful desenvolvida para gerenciar tópicos de discu
 
 5. Insira um usuário de teste no banco para autenticação:
    ```sql
-   INSERT INTO usuarios (login, senha) VALUES ('joao', '$2a$10$XURPShQ5uMjZ6Q.9pH2T3u/3qC2P3K1s3M3N3O3P3Q3R3S3T3U3V3');
+   INSERT INTO usuarios (login, senha) VALUES ('joao', '$2a$12$BD1HEdxVlPkIhtur.ViWTe.2oMYQOjPtYX9RxwCsu8zZaxDQ08c9C');
    ```
    - A senha acima é o hash BCrypt de `123456`. Use [bcrypt-generator.com](https://bcrypt-generator.com/) para gerar outros hashes.
 
@@ -74,7 +74,7 @@ O **FórumHub** é uma API RESTful desenvolvida para gerenciar tópicos de discu
 
 1. Clone o repositório (se disponível) ou crie o projeto com a estrutura fornecida:
    ```bash
-   git clone <URL_DO_REPOSITORIO>
+   git clone https://github.com/AlanDelValle/ForumHub.git
    ```
 2. Abra o projeto no **Visual Studio Code** (ou outra IDE).
 3. Certifique-se de que as extensões recomendadas estão instaladas:
@@ -88,27 +88,31 @@ O **FórumHub** é uma API RESTful desenvolvida para gerenciar tópicos de discu
 forumhub/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/seu_dominio/forumhub/
+│   │   ├── java/com/forumhub/
 │   │   │   ├── api/controller/
 │   │   │   │   ├── AuthController.java
 │   │   │   │   ├── TopicoController.java
 │   │   │   ├── config/
+│   │   │   │   ├── CorsConfiguration.java
 │   │   │   │   ├── SecurityConfigurations.java
 │   │   │   │   ├── SecurityFilter.java
-│   │   │   ├── domain/
-│   │   │   │   ├── dto/
-│   │   │   │   │   ├── LoginRequestDTO.java
-│   │   │   │   │   ├── TopicoRequestDTO.java
-│   │   │   │   │   ├── TopicoResponseDTO.java
-│   │   │   │   ├── model/
-│   │   │   │   │   ├── Topico.java
-│   │   │   │   │   ├── Usuario.java
-│   │   │   │   ├── repository/
-│   │   │   │   │   ├── TopicoRepository.java
-│   │   │   │   │   ├── UsuarioRepository.java
-│   │   │   │   ├── service/
-│   │   │   │   │   ├── TokenService.java
-│   │   │   │   │   ├── UsuarioService.java
+│   │   │   ├── dto/
+│   │   │   │   ├── Login.java
+│   │   │   │   ├── LoginRequestDTO.java
+│   │   │   │   ├── TopicoRequestDTO.java
+│   │   │   │   ├── TopicoResponseDTO.java
+│   │   │   ├── model/
+│   │   │   │   ├── Topico.java
+│   │   │   │   ├── Usuario.java
+│   │   │   ├── repository/
+│   │   │   │   ├── TopicoRepository.java
+│   │   │   │   ├── UsuarioRepository.java
+│   │   │   ├── security/
+│   │   │   │   ├── DadosTokenJWT.java
+│   │   │   ├── service/
+│   │   │   │   ├── TokenService.java
+│   │   │   │   ├── UserDetailsServiceImpl.java
+│   │   ├── ForumHubApplication.java
 │   │   ├── resources/
 │   │   │   ├── db/migration/
 │   │   │   │   ├── V1__create_table_topicos.sql
@@ -155,6 +159,9 @@ A API possui os seguintes endpoints:
     - 401 Unauthorized: Credenciais inválidas.
     - 400 Bad Request: Campos obrigatórios ausentes.
 
+    - **Token**:
+    - Copie o token gerado e cole no cabeçalho das próximas requisições.
+
 #### Tópicos (Requer Autenticação)
 
 - **POST /topicos**
@@ -163,22 +170,25 @@ A API possui os seguintes endpoints:
   - **Corpo da Requisição**:
     ```json
     {
-      "titulo": "Problema com Java",
-      "mensagem": "Como resolver NullPointerException?",
-      "autor": "João Silva",
-      "curso": "Java Intermediário"
+      "titulo": "Dúvida sobre Spring Security",
+      "mensagem": "Estou com dificuldades para configurar autenticação com JWT.",
+      "dataCriacao": "2025-07-23T18:30:00",
+      "status": "ABERTO",
+      "autor": "joao",
+      "curso": "Java Backend",
+      "year": 2025
     }
     ```
   - **Resposta de Sucesso** (201 Created):
     ```json
     {
       "id": 1,
-      "titulo": "Problema com Java",
-      "mensagem": "Como resolver NullPointerException?",
-      "dataCriacao": "2025-07-18T20:32:00.000Z",
+      "titulo": "Dúvida sobre Spring Security",
+      "mensagem": "Estou com dificuldades para configurar autenticação com JWT.",
+      "dataCriacao": "2025-07-23T18:51:08.6051971",
       "status": "ATIVO",
-      "autor": "João Silva",
-      "curso": "Java Intermediário"
+      "autor": "joao",
+      "curso": "Java Backend"
     }
     ```
   - **Erros**:
@@ -193,22 +203,37 @@ A API possui os seguintes endpoints:
     {
       "content": [
         {
-          "id": 1,
-          "titulo": "Problema com Java",
-          "mensagem": "Como resolver NullPointerException?",
-          "dataCriacao": "2025-07-18T20:32:00.000Z",
+          "id": 3,
+          "titulo": "Dúvida sobre Spring Security",
+          "mensagem": "Estou com dificuldades para configurar autenticação com JWT.",
+          "dataCriacao": "2025-07-23T18:51:08.605197",
           "status": "ATIVO",
-          "autor": "João Silva",
-          "curso": "Java Intermediário"
+          "autor": "joao",
+          "curso": "Java Backend"
         }
       ],
-      "pageable": { /* ... */ },
-      "totalPages": 1,
-      "totalElements": 1,
+      "pageable": {
+        "pageNumber": 0,
+        "pageSize": 10,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "offset": 0,
+        "paged": true,
+        "unpaged": false
+      },
       "last": true,
+      "totalElements": 1,
+      "totalPages": 1,
       "size": 10,
       "number": 0,
-      "sort": { /* ... */ },
+      "sort": {
+        "empty": false,
+        "sorted": true,
+        "unsorted": false
+      },
       "first": true,
       "numberOfElements": 1,
       "empty": false
@@ -224,12 +249,12 @@ A API possui os seguintes endpoints:
     ```json
     {
       "id": 1,
-      "titulo": "Problema com Java",
-      "mensagem": "Como resolver NullPointerException?",
-      "dataCriacao": "2025-07-18T20:32:00.000Z",
+      "titulo": "Dúvida sobre Spring Security",
+      "mensagem": "Estou com dificuldades para configurar autenticação com JWT.",
+      "dataCriacao": "2025-07-23T18:51:08.605197",
       "status": "ATIVO",
-      "autor": "João Silva",
-      "curso": "Java Intermediário"
+      "autor": "joao",
+      "curso": "Java Backend"
     }
     ```
   - **Erros**:
@@ -254,7 +279,7 @@ A API possui os seguintes endpoints:
       "id": 1,
       "titulo": "Problema com Java Atualizado",
       "mensagem": "Como evitar NullPointerException?",
-      "dataCriacao": "2025-07-18T20:32:00.000Z",
+      "dataCriacao": "2025-07-23T18:51:08.605197",
       "status": "ATIVO",
       "autor": "João Silva",
       "curso": "Java Avançado"
@@ -282,13 +307,13 @@ A API possui os seguintes endpoints:
     {
       "content": [
         {
-          "id": 1,
-          "titulo": "Problema com Java",
-          "mensagem": "Como resolver NullPointerException?",
-          "dataCriacao": "2025-07-18T20:32:00.000Z",
+         "id": 1,
+          "titulo": "Problema com Java Atualizado",
+          "mensagem": "Como evitar NullPointerException?",
+          "dataCriacao": "2025-07-23T18:51:08.605197",
           "status": "ATIVO",
           "autor": "João Silva",
-          "curso": "Java Intermediário"
+          "curso": "Java Avançado"
         }
       ],
       "pageable": { /* ... */ },

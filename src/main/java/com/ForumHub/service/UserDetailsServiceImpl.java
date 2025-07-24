@@ -28,6 +28,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     return new UsernameNotFoundException("Usuário não encontrado: " + username);
                 });
         logger.info("Usuário encontrado - Login: {}, Senha: {}", usuario.getLogin(), usuario.getSenha());
-        return usuario; // Como Usuario já implementa UserDetails
+        return usuario;
     }
 }
